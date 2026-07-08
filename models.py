@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-
+from sqlalchemy.orm import backref
 db = SQLAlchemy()
 
 
@@ -44,7 +44,11 @@ class Company(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
 
-    user = db.relationship("User", backref="company", uselist=False)
+    user = db.relationship(
+        "User",
+        backref=backref("company", uselist=False),
+        uselist=False
+    )
     job_positions = db.relationship("JobPosition", backref="company", lazy=True)
 
 

@@ -1,15 +1,28 @@
 from flask import Flask
 from models import db, User
 
+from extensions import bcrypt
+from flask_jwt_extended import JWTManager
+
+from controllers.auth import auth_bp
+from controllers.admin import admin_bp
+
 app = Flask(__name__)
+bcrypt.init_app(app)
+
+jwt = JWTManager(app)
 
 
 
 app.config["SECRET_KEY"] = "Ronit1806"
+app.config["JWT_SECRET_KEY"] = "RonitJWT1806"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///placement.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
+
 
 @app.route("/")
 def home():
@@ -23,7 +36,7 @@ with app.app_context():
     if admin is None:
         admin = User(
             email="admin@placement.com",
-            password="admin123",
+            password=bcrypt.generate_password_hash("admin123").decode("utf-8"),
             role="admin"
         )
         db.session.add(admin)
