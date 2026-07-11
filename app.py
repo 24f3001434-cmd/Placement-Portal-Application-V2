@@ -1,5 +1,6 @@
 from flask import Flask
 from models import db, User
+from datetime import timedelta
 
 from extensions import bcrypt
 from flask_jwt_extended import JWTManager
@@ -7,7 +8,10 @@ from flask_jwt_extended import JWTManager
 from controllers.auth import auth_bp
 from controllers.admin import admin_bp
 
+from flask_cors import CORS
+
 app = Flask(__name__)
+CORS(app)
 bcrypt.init_app(app)
 
 jwt = JWTManager(app)
@@ -16,6 +20,7 @@ jwt = JWTManager(app)
 
 app.config["SECRET_KEY"] = "Ronit1806"
 app.config["JWT_SECRET_KEY"] = "RonitJWT1806"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=12)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///placement.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
