@@ -148,3 +148,76 @@ def get_company(company_id):
         "hr_contact": company.hr_contact,
         "status": company.approval
     }), 200
+
+
+####Job Deatails ####
+@admin_bp.route("/jobs", methods=["GET"])
+@jwt_required()
+def get_all_jobs():
+
+    jobs = JobPosition.query.all()
+
+    data = []
+
+    for job in jobs:
+
+        company = Company.query.get(job.company_id)
+
+        data.append({
+            "id": job.id,
+            "title": job.title,
+            "company": company.company_name,
+            "salary_package": job.salary_package,
+            "status": job.approval
+        })
+
+    return jsonify(data), 200
+
+
+
+@admin_bp.route("/job/<int:job_id>", methods=["GET"])
+@jwt_required()
+def get_job(job_id):
+
+    job = JobPosition.query.get(job_id)
+
+    if job is None:
+        return jsonify({
+            "message": "Job not found"
+        }), 404
+
+    company = Company.query.get(job.company_id)
+
+    return jsonify({
+        "id": job.id,
+        "company": company.company_name,
+        "title": job.title,
+        "description": job.description,
+        "eligibility": job.eligibility,
+        "skills": job.skills,
+        "experience": job.experience,
+        "salary_package": job.salary_package,
+        "status": job.approval
+    }), 200
+
+
+#### Admin Job Approval ####
+
+@admin_bp.route("/approve-job/<int:job_id>", methods=["PUT"])
+@jwt_required()
+def approve_job(job_id):
+
+    job = JobPosition.query.get(job_id)
+
+    if job is None:
+        return jsonify({
+            "message": "Job not found"
+        }), 404
+
+    job.approval = "approved"
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Job Approved Successfully"
+    }), 200

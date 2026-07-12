@@ -1,12 +1,13 @@
 from flask import Flask
 from models import db, User
 from datetime import timedelta
-
+from controllers.student import student_bp
 from extensions import bcrypt
 from flask_jwt_extended import JWTManager
 
 from controllers.auth import auth_bp
 from controllers.admin import admin_bp
+from controllers.company import company_bp
 
 from flask_cors import CORS
 
@@ -27,7 +28,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
-
+app.register_blueprint(company_bp)
+app.register_blueprint(student_bp)
 
 @app.route("/")
 def home():

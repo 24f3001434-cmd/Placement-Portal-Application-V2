@@ -1,13 +1,18 @@
 <template>
+
     <Navbar />
+
     <div class="container mt-5">
+
         <button
             class="btn btn-secondary mb-3"
-            @click="goBack"
+            @click="router.push('/student/dashboard')"
         >
             ← Back
         </button>
-        <h2>Companies</h2>
+
+        <h2>Available Jobs</h2>
+
         <div class="row mb-3">
 
             <div class="col-md-6">
@@ -15,14 +20,15 @@
                 <input
                     type="text"
                     class="form-control"
-                    placeholder="Search Company..."
+                    placeholder="Search Job by position , Company Name"
                     v-model="search"
-                    @input="loadCompanies"
+                    @input="loadJobs"
                 >
 
             </div>
 
         </div>
+
         <hr>
 
         <table class="table table-bordered">
@@ -30,9 +36,9 @@
             <thead>
 
                 <tr>
-                    <th>Company Name</th>
-                    <th>Industry</th>
-                    <th>Status</th>
+                    <th>Job Title</th>
+                    <th>Company</th>
+                    <th>Salary</th>
                     <th>Action</th>
                 </tr>
 
@@ -40,21 +46,24 @@
 
             <tbody>
 
-                <tr v-for="company in companies" :key="company.id">
+                <tr
+                    v-for="job in jobs"
+                    :key="job.id"
+                >
 
-                    <td>{{ company.name }}</td>
-
-                    <td>{{ company.industry }}</td>
-
-                    <td>{{ company.status }}</td>
+                    <td>{{ job.title }}</td>
+                    <td>{{ job.company }}</td>
+                    <td>{{ job.salary_package }}</td>
 
                     <td>
+
                         <button
                             class="btn btn-primary btn-sm"
-                            @click="router.push(`/company/${company.id}`)"
+                            @click="router.push(`/student/job/${job.id}`)"
                         >
                             View
                         </button>
+
                     </td>
 
                 </tr>
@@ -64,30 +73,38 @@
         </table>
 
     </div>
+
 </template>
 
 <script setup>
 
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import api from "../services/api";
-import Navbar from "../components/Navbar.vue";
 
-const companies = ref([]);
-const search = ref("");
+import Navbar from "../components/Navbar.vue";
+import api from "../services/api";
+
 const router = useRouter();
 
-async function loadCompanies() {
+const jobs = ref([]);
+const search = ref("");
+
+async function loadJobs() {
 
     try {
 
-        const response = await api.get(`/companies?search=${search.value}`, {
+        const response = await api.get("/student/jobs", {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`
+            }
         });
 
-        companies.value = response.data;
+        const keyword = search.value.toLowerCase();
+
+        jobs.value = response.data.filter(job =>
+            job.title.toLowerCase().includes(keyword) ||
+            job.company.toLowerCase().includes(keyword)
+        );
 
     }
 
@@ -98,15 +115,10 @@ async function loadCompanies() {
     }
 
 }
-function goBack() {
-
-    router.push("/admin/dashboard");
-
-}
 
 onMounted(() => {
 
-    loadCompanies();
+    loadJobs();
 
 });
 

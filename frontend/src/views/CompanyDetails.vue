@@ -1,4 +1,5 @@
 <template>
+    <Navbar />
     <div class="container mt-5">
         <button
             class="btn btn-secondary mb-3"
@@ -61,7 +62,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "../services/api";
-
+import Navbar from "../components/Navbar.vue";
 const route = useRoute();
 const router = useRouter();
 

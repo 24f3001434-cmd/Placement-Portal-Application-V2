@@ -1,4 +1,5 @@
 <template>
+    <Navbar />
   <div>
     <h2>Placement Portal Login</h2>
 
@@ -19,6 +20,22 @@
     <br /><br />
 
     <button @click="login">Login</button>
+    <div class="mt-3">
+
+        <button
+            class="btn btn-outline-primary me-2"
+            @click="$router.push('/register/company')"
+        >
+            Register as Company
+        </button>
+        <button
+            class="btn btn-outline-success"
+            @click="$router.push('/register/student')"
+        >
+            Register as Student
+        </button>
+
+    </div>
 
     <p>{{ message }}</p>
   </div>
@@ -28,6 +45,7 @@
 import { ref } from "vue";
 import api from "../services/api";
 import router from "../router";
+import Navbar from "../components/Navbar.vue";
 
 const email = ref("");
 const password = ref("");
