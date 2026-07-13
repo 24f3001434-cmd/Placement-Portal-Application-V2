@@ -16,6 +16,14 @@
             <div class="ms-auto">
 
                 <button
+                    v-if="role !== 'admin'"
+                    class="btn btn-outline-info me-2"
+                    @click="goProfile"
+                >
+                    Profile
+                </button>
+
+                <button
                     class="btn btn-outline-light me-2"
                     @click="goDashboard"
                 >
@@ -62,6 +70,22 @@ function goDashboard() {
     else if (role === "student") {
 
         router.push("/student/dashboard");
+
+    }
+
+}
+
+function goProfile() {
+
+    if (role === "company") {
+
+        router.push("/company/profile");
+
+    }
+
+    else if (role === "student") {
+
+        router.push("/student/profile");
 
     }
 

@@ -15,6 +15,11 @@ import PostJob from "../views/PostJob.vue";
 import CompanyJobs from "../views/CompanyJobs.vue";
 import CompanyJobDetails from "../views/CompanyJobDetails.vue";
 import ApplicationDetails from "../views/ApplicationDetails.vue";
+import AppliedJobs from "../views/AppliedJobs.vue";
+import CompanyProfile from "../views/CompanyProfile.vue";
+import EditCompanyProfile from "../views/EditCompanyProfile.vue";
+import StudentProfile from "../views/StudentProfile.vue";
+import EditStudentProfile from "../views/EditStudentProfile.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -92,8 +97,57 @@ const router = createRouter({
     {
       path:"/application/:id",
       component:ApplicationDetails,
-    }
+    },
+    {
+      path: "/student/applications",
+      component: AppliedJobs,
+    },
+    {
+      path: "/company/profile",
+      component: CompanyProfile
+    },
+    {
+      path: "/company/profile/edit",
+      component: EditCompanyProfile,
+    },
+    {
+      path: "/student/profile",
+      component: StudentProfile,
+    },
+    {
+      path: "/student/profile/edit",
+      component: EditStudentProfile,
+    },
   ],
+});
+router.beforeEach((to, from, next) => {
+
+    const token = localStorage.getItem("access_token");
+    const role = localStorage.getItem("role");
+
+    if (
+        to.path.startsWith("/admin") &&
+        (!token || role !== "admin")
+    ) {
+        return next("/");
+    }
+
+    if (
+        to.path.startsWith("/company") &&
+        (!token || role !== "company")
+    ) {
+        return next("/");
+    }
+
+    if (
+        to.path.startsWith("/student") &&
+        (!token || role !== "student")
+    ) {
+        return next("/");
+    }
+
+    next();
+
 });
 
 export default router;

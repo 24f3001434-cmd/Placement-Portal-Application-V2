@@ -6,7 +6,7 @@
 
         <button
             class="btn btn-secondary mb-3"
-            @click="router.back()"
+            @click="router.push('/company/job/' + application.job_position_id)"
         >
             ← Back
         </button>

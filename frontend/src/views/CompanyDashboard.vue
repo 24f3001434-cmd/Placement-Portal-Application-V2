@@ -31,7 +31,7 @@
                 <div
                     class="card p-4 text-center"
                     style="cursor:pointer;"
-                    @click="router.push('/company/applications')"
+                    @click="router.push('/company/jobs')"
                 >
 
                     <h5>Total Applications</h5>
@@ -91,13 +91,15 @@ async function loadDashboard() {
 
     try {
 
-        const response = await api.get("/company/jobs", {
+        const response = await api.get("/company/dashboard", {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("access_token")}`
             }
         });
 
-        totalJobs.value = response.data.length;
+        totalJobs.value = response.data.total_jobs;
+        totalApplications.value = response.data.total_applications;
+        shortlisted.value = response.data.shortlisted;
 
     }
 

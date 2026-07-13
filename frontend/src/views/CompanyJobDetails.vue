@@ -34,6 +34,24 @@
             <p><strong>Approval:</strong> {{ job.approval }}</p>
 
         </div>
+        <div class="mt-3">
+
+            <button
+                v-if="job.status === 'active'"
+                class="btn btn-warning"
+                @click="closeJob"
+            >
+                Close Job
+            </button>
+
+            <span
+                v-else
+                class="badge bg-danger fs-6"
+            >
+                Job Closed
+            </span>
+
+        </div>
         <hr>
 
 <h3>Applications Received</h3>
@@ -151,7 +169,31 @@ async function loadApplications() {
     }
 
 }
+async function closeJob() {
 
+    try {
+
+        await api.put(
+            `/company/job/${job.value.id}/close`,
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`
+                }
+            }
+        );
+
+        job.value.status = "closed";
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+    }
+
+}
 onMounted(() => {
 
     loadJob();

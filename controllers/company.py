@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from models import db, Company, Student, JobPosition, Application, User
+from models import db, Company, Student, JobPosition, Application, User,Placement
 
 company_bp = Blueprint("company", __name__)
 
@@ -135,6 +135,7 @@ def get_application(application_id):
     return jsonify({
 
         "application_id": application.id,
+        "job_position_id": application.job_position_id,
         "student_name": student.name,
         "course": student.course,
         "cgpa": student.cgpa,
@@ -186,4 +187,183 @@ def reject_application(application_id):
 
     return jsonify({
         "message": "Student rejected successfully"
+    }), 200
+
+
+### Select Candidate ###
+
+@company_bp.route("/application/<int:application_id>/select", methods=["PUT"])
+@jwt_required()
+def select_application(application_id):
+
+    application = Application.query.get(application_id)
+
+    if application is None:
+        return jsonify({"message": "Application not found"}), 404
+
+    if application.status == "selected":
+        return jsonify({"message": "Student already selected"}), 400
+
+    application.status = "selected"
+
+    existing = Placement.query.filter_by(
+        application_id=application.id
+    ).first()
+
+    if existing is None:
+
+        placement = Placement(
+            application_id=application.id,
+            student_id=application.student_id,
+            company_id=application.job_position.company_id,
+            job_position_id=application.job_position_id
+        )
+
+        db.session.add(placement)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Student selected successfully"
+    }), 200
+
+#### Close Jobs ####
+
+@company_bp.route("/company/job/<int:job_id>/close", methods=["PUT"])
+@jwt_required()
+def close_job(job_id):
+
+    job = JobPosition.query.get(job_id)
+
+    if job is None:
+        return jsonify({"message": "Job not found"}), 404
+
+    job.status = "closed"
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Job closed successfully"
+    }), 200
+
+@company_bp.route("/company/dashboard", methods=["GET"])
+@jwt_required()
+def company_dashboard():
+
+    user_id = get_jwt_identity()
+
+    company = Company.query.filter_by(user_id=user_id).first()
+
+    if company is None:
+        return jsonify({"message": "Company not found"}), 404
+
+    jobs = JobPosition.query.filter_by(company_id=company.id).all()
+
+    total_jobs = len(jobs)
+
+    total_applications = 0
+    shortlisted = 0
+
+    for job in jobs:
+
+        applications = Application.query.filter_by(
+            job_position_id=job.id
+        ).all()
+
+        total_applications += len(applications)
+
+        shortlisted += sum(
+            1 for application in applications
+            if application.status in ["shortlisted", "selected"]
+        )
+
+    return jsonify({
+
+        "total_jobs": total_jobs,
+        "total_applications": total_applications,
+        "shortlisted": shortlisted
+
+    }), 200
+
+@company_bp.route("/company/applications", methods=["GET"])
+@jwt_required()
+def get_company_applications():
+
+    user_id = get_jwt_identity()
+
+    company = Company.query.filter_by(user_id=user_id).first()
+
+    if company is None:
+        return jsonify({"message": "Company not found"}), 404
+
+    applications = (
+        Application.query
+        .join(JobPosition)
+        .filter(JobPosition.company_id == company.id)
+        .all()
+    )
+
+    data = []
+
+    for application in applications:
+
+        student = application.student
+        job = application.job_position
+
+        data.append({
+            "application_id": application.id,
+            "student_name": student.name,
+            "job_title": job.title,
+            "status": application.status
+        })
+
+    return jsonify(data), 200
+
+#### Company Profile ####
+
+@company_bp.route("/company/profile", methods=["GET"])
+@jwt_required()
+def company_profile():
+
+    user_id = get_jwt_identity()
+
+    company = Company.query.filter_by(user_id=user_id).first()
+
+    if company is None:
+        return jsonify({"message": "Company not found"}), 404
+
+    return jsonify({
+
+        "company_name": company.company_name,
+        "website": company.website,
+        "industry": company.industry,
+        "description": company.description,
+        "hr_contact": company.hr_contact,
+        "approval": company.approval
+
+    }), 200
+
+@company_bp.route("/company/profile", methods=["PUT"])
+@jwt_required()
+def update_company_profile():
+
+    user_id = get_jwt_identity()
+
+    company = Company.query.filter_by(user_id=user_id).first()
+
+    if company is None:
+        return jsonify({"message": "Company not found"}), 404
+
+    data = request.get_json()
+
+    company.company_name = data.get("company_name", company.company_name)
+    company.website = data.get("website", company.website)
+    company.industry = data.get("industry", company.industry)
+    company.hr_contact = data.get("hr_contact", company.hr_contact)
+    company.description = data.get("description", company.description)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Profile updated successfully"
     }), 200
