@@ -88,14 +88,21 @@
 
             <div class="mb-3">
 
-                <label class="form-label">Resume</label>
+                <label class="form-label">Resume (PDF)</label>
 
                 <input
-                    type="text"
+                    type="file"
                     class="form-control"
-                    v-model="student.resume"
-                    placeholder="resume.pdf"
+                    accept=".pdf"
+                    @change="handleResume"
                 >
+
+                <small
+                    v-if="student.resume"
+                    class="text-success"
+                >
+                    Current Resume : {{ student.resume }}
+                </small>
 
             </div>
 
@@ -130,6 +137,7 @@ import api from "../services/api";
 const router = useRouter();
 
 const student = ref({});
+const resumeFile = ref(null);
 
 async function loadProfile() {
 
@@ -156,18 +164,56 @@ async function loadProfile() {
 
 }
 
+function handleResume(event) {
+
+    resumeFile.value = event.target.files[0];
+
+}
+
 async function updateProfile() {
 
     try {
 
+        // Upload resume first
+        if (resumeFile.value) {
+
+            const formData = new FormData();
+
+            formData.append("resume", resumeFile.value);
+
+            const uploadResponse = await api.post(
+
+                "/student/upload_resume",
+
+                formData,
+
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                        "Content-Type": "multipart/form-data"
+                    }
+                }
+
+            );
+
+            // Update the local object so PUT doesn't overwrite it
+            student.value.resume = uploadResponse.data.resume;
+
+        }
+
+        // Update remaining profile details
         await api.put(
+
             "/student/profile",
+
             student.value,
+
             {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`
                 }
             }
+
         );
 
         alert("Profile updated successfully!");
@@ -179,6 +225,8 @@ async function updateProfile() {
     catch (error) {
 
         console.log(error);
+
+        alert("Failed to update profile.");
 
     }
 

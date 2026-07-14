@@ -40,7 +40,9 @@
 
             <div class="col-md-4">
 
-                <div class="card p-4 text-center">
+                <div class="card p-4 text-center"
+                style="cursor:pointer;"
+                @click="router.push('/student/placements')">
 
                     <h5>Placement History</h5>
 

@@ -76,7 +76,9 @@ class Application(db.Model):
 
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
     job_position_id = db.Column(db.Integer, db.ForeignKey("job_position.id"), nullable=False)
-
+    interview_date = db.Column(db.DateTime)
+    interview_mode = db.Column(db.String(50))
+    feedback = db.Column(db.Text)
 
 class Placement(db.Model):
     id = db.Column(db.Integer, primary_key=True)

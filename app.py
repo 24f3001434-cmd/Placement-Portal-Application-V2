@@ -12,6 +12,10 @@ from controllers.company import company_bp
 from flask_cors import CORS
 
 app = Flask(__name__)
+import os
+
+UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 CORS(app)
 bcrypt.init_app(app)
 

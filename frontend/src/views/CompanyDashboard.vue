@@ -44,7 +44,10 @@
 
             <div class="col-md-3">
 
-                <div class="card p-4 text-center">
+                <div class="card p-4 text-center"
+                style="cursor:pointer;"
+                @click="router.push('/company/shortlisted')"
+                >
 
                     <h5>Shortlisted</h5>
 

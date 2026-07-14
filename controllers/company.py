@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
+from datetime import datetime
 from models import db, Company, Student, JobPosition, Application, User,Placement
 
 company_bp = Blueprint("company", __name__)
@@ -19,6 +19,12 @@ def post_job():
         return jsonify({
             "message": "Company not found"
         }), 404
+    
+    if company.status != "approved":
+
+        return jsonify({
+            "message": "Company is not approved by Admin"
+        }), 403
 
     data = request.get_json()
 
@@ -181,7 +187,10 @@ def reject_application(application_id):
             "message": "Application not found"
         }), 404
 
+    data = request.get_json()
+
     application.status = "rejected"
+    application.feedback = data.get("feedback", "")
 
     db.session.commit()
 
@@ -191,7 +200,6 @@ def reject_application(application_id):
 
 
 ### Select Candidate ###
-
 @company_bp.route("/application/<int:application_id>/select", methods=["PUT"])
 @jwt_required()
 def select_application(application_id):
@@ -199,12 +207,19 @@ def select_application(application_id):
     application = Application.query.get(application_id)
 
     if application is None:
-        return jsonify({"message": "Application not found"}), 404
+        return jsonify({
+            "message": "Application not found"
+        }), 404
 
     if application.status == "selected":
-        return jsonify({"message": "Student already selected"}), 400
+        return jsonify({
+            "message": "Student already selected"
+        }), 400
+
+    data = request.get_json()
 
     application.status = "selected"
+    application.feedback = data.get("feedback", "")
 
     existing = Placement.query.filter_by(
         application_id=application.id
@@ -226,6 +241,7 @@ def select_application(application_id):
     return jsonify({
         "message": "Student selected successfully"
     }), 200
+
 
 #### Close Jobs ####
 
@@ -367,3 +383,72 @@ def update_company_profile():
     return jsonify({
         "message": "Profile updated successfully"
     }), 200
+
+@company_bp.route("/company/shortlisted", methods=["GET"])
+@jwt_required()
+def company_shortlisted():
+
+    user_id = get_jwt_identity()
+
+    company = Company.query.filter_by(user_id=user_id).first()
+
+    if company is None:
+        return jsonify({"message": "Company not found"}), 404
+
+    applications = (
+        Application.query
+        .join(JobPosition)
+        .join(Student)
+        .filter(
+            JobPosition.company_id == company.id,
+            Application.status == "shortlisted"
+        )
+        .all()
+    )
+
+    shortlisted = []
+
+    for application in applications:
+
+        shortlisted.append({
+
+            "application_id": application.id,
+            "student_name": application.student.name,
+            "job_title": application.job_position.title,
+            "course": application.student.course,
+            "cgpa": application.student.cgpa
+
+        })
+
+    return jsonify(shortlisted), 200
+
+
+@company_bp.route("/company/application/<int:application_id>/interview", methods=["PUT"])
+@jwt_required()
+def schedule_interview(application_id):
+
+    data = request.get_json()
+
+    application = Application.query.get(application_id)
+
+    if application is None:
+
+        return jsonify({
+            "message": "Application not found"
+        }), 404
+
+    application.status = "interview"
+
+    application.interview_date = datetime.fromisoformat(
+        data["interview_date"]
+    )
+
+    application.interview_mode = data["interview_mode"]
+    application.feedback = data.get("feedback", "")
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Interview scheduled successfully"
+    }), 200
+

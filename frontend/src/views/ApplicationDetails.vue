@@ -18,32 +18,161 @@
         <div class="card p-4">
 
             <p><strong>Name:</strong> {{ application.student_name }}</p>
-
             <p><strong>Course:</strong> {{ application.course }}</p>
-
             <p><strong>CGPA:</strong> {{ application.cgpa }}</p>
-
             <p><strong>Skills:</strong> {{ application.skills }}</p>
-
             <p><strong>Experience:</strong> {{ application.experience }}</p>
-
             <p><strong>Status:</strong> {{ application.status }}</p>
+
+            <div v-if="application.interview_date">
+                <p><strong>Interview Date:</strong> {{ application.interview_date }}</p>
+                <p><strong>Interview Mode:</strong> {{ application.interview_mode }}</p>
+            </div>
+
+            <div
+                v-if="application.feedback"
+                class="alert alert-warning mt-3"
+            >
+                <strong>Feedback:</strong><br>
+                {{ application.feedback }}
+            </div>
 
             <hr>
 
-            <button
-                class="btn btn-success me-2"
-                @click="shortlistStudent"
-            >
-                Shortlist
-            </button>
+            <!-- Applied -->
 
-            <button
-                class="btn btn-danger"
-                @click="rejectStudent"
-            >
-                Reject
-            </button>
+            <div v-if="application.status === 'applied'">
+
+                <button
+                    class="btn btn-success me-2"
+                    @click="shortlistStudent"
+                >
+                    Shortlist
+                </button>
+
+                <button
+                    class="btn btn-danger"
+                    @click="rejectStudent"
+                >
+                    Reject
+                </button>
+
+            </div>
+
+            <!-- Shortlisted -->
+
+            <div v-else-if="application.status === 'shortlisted'">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Interview Date
+                    </label>
+
+                    <input
+                        type="datetime-local"
+                        class="form-control"
+                        v-model="interview.interview_date"
+                    >
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Interview Mode
+                    </label>
+
+                    <select
+                        class="form-control"
+                        v-model="interview.interview_mode"
+                    >
+
+                        <option>Online</option>
+                        <option>Offline</option>
+
+                    </select>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Feedback
+                    </label>
+
+                    <textarea
+                        class="form-control"
+                        rows="3"
+                        v-model="interview.feedback"
+                        placeholder="Enter feedback"
+                    ></textarea>
+
+                </div>
+
+                <button
+                    class="btn btn-primary"
+                    @click="scheduleInterview"
+                >
+                    Schedule Interview
+                </button>
+
+            </div>
+
+            <!-- Interview -->
+
+            <div v-else-if="application.status === 'interview'">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Feedback
+                    </label>
+
+                    <textarea
+                        class="form-control"
+                        rows="3"
+                        v-model="feedback"
+                        placeholder="Enter feedback"
+                    ></textarea>
+
+                </div>
+
+                <button
+                    class="btn btn-success me-2"
+                    @click="selectStudent"
+                >
+                    Select
+                </button>
+
+                <button
+                    class="btn btn-danger"
+                    @click="rejectStudent"
+                >
+                    Reject
+                </button>
+
+            </div>
+
+            <!-- Reject -->
+
+            <div v-if="showReject" class="mt-4">
+
+                <textarea
+                    class="form-control"
+                    rows="4"
+                    v-model="feedback"
+                    placeholder="Enter feedback"
+                ></textarea>
+
+                <button
+                    class="btn btn-danger mt-3"
+                    @click="rejectStudent"
+                >
+                    Confirm Reject
+                </button>
+
+            </div>
 
         </div>
 
@@ -63,6 +192,17 @@ const route = useRoute();
 const router = useRouter();
 
 const application = ref({});
+
+const showReject = ref(false);
+
+const feedback = ref("");
+
+const interview = ref({
+
+    interview_date:"",
+    interview_mode:"Online",
+    feedback:""
+});
 
 async function loadApplication(){
 
@@ -91,68 +231,98 @@ async function loadApplication(){
     }
 
 }
-async function shortlistStudent() {
 
-    try {
+async function shortlistStudent(){
 
-        const response = await api.put(
+    const response = await api.put(
 
-            `/application/${route.params.id}/shortlist`,
+        `/application/${route.params.id}/shortlist`,
 
-            {},
+        {},
 
-            {
-                headers:{
-                    Authorization:`Bearer ${localStorage.getItem("access_token")}`
-                }
+        {
+            headers:{
+                Authorization:`Bearer ${localStorage.getItem("access_token")}`
             }
+        }
 
-        );
+    );
 
-        alert(response.data.message);
+    alert(response.data.message);
 
-        loadApplication();
-
-    }
-
-    catch(error){
-
-        console.log(error);
-
-    }
+    loadApplication();
 
 }
 
+async function scheduleInterview(){
 
-async function rejectStudent() {
+    const response = await api.put(
 
-    try {
+        `/company/application/${route.params.id}/interview`,
 
-        const response = await api.put(
+        interview.value,
 
-            `/application/${route.params.id}/reject`,
-
-            {},
-
-            {
-                headers:{
-                    Authorization:`Bearer ${localStorage.getItem("access_token")}`
-                }
+        {
+            headers:{
+                Authorization:`Bearer ${localStorage.getItem("access_token")}`
             }
+        }
 
-        );
+    );
 
-        alert(response.data.message);
+    alert(response.data.message);
 
-        loadApplication();
+    loadApplication();
 
-    }
+}
 
-    catch(error){
+async function selectStudent(){
 
-        console.log(error);
+    const response = await api.put(
 
-    }
+        `/application/${route.params.id}/select`,
+
+        {
+            feedback: feedback.value
+        },
+
+        {
+            headers:{
+                Authorization:`Bearer ${localStorage.getItem("access_token")}`
+            }
+        }
+
+    );
+
+    alert(response.data.message);
+
+    loadApplication();
+
+}
+
+async function rejectStudent(){
+
+    const response = await api.put(
+
+        `/application/${route.params.id}/reject`,
+
+        {
+            feedback:feedback.value
+        },
+
+        {
+            headers:{
+                Authorization:`Bearer ${localStorage.getItem("access_token")}`
+            }
+        }
+
+    );
+
+    alert(response.data.message);
+
+    showReject.value=false;
+
+    loadApplication();
 
 }
 

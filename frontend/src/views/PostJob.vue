@@ -4,71 +4,108 @@
 
     <div class="container mt-5">
 
-        <h2>Company Dashboard</h2>
+        <h2>Post New Job</h2>
 
         <hr>
 
-        <div class="row">
+        <form @submit.prevent="postJob">
 
-            <div class="col-md-3">
+            <div class="mb-3">
 
-                <div
-                    class="card p-4 text-center"
-                    style="cursor:pointer;"
-                    @click="router.push('/company/jobs')"
+                <label class="form-label">Job Title</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    v-model="job.title"
+                    required
                 >
 
-                    <h5>Total Jobs Posted</h5>
+            </div>
 
-                    <h3>{{ totalJobs }}</h3>
+            <div class="mb-3">
 
-                </div>
+                <label class="form-label">Description</label>
+
+                <textarea
+                    class="form-control"
+                    rows="4"
+                    v-model="job.description"
+                    required
+                ></textarea>
 
             </div>
 
-            <div class="col-md-3">
+            <div class="mb-3">
 
-                <div
-                    class="card p-4 text-center"
-                    style="cursor:pointer;"
-                    @click="router.push('/company/applications')"
+                <label class="form-label">Eligibility</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    v-model="job.eligibility"
+                    required
                 >
 
-                    <h5>Total Applications</h5>
-
-                    <h3>{{ totalApplications }}</h3>
-
-                </div>
-
             </div>
 
-            <div class="col-md-3">
+            <div class="mb-3">
 
-                <div class="card p-4 text-center">
+                <label class="form-label">Skills</label>
 
-                    <h5>Shortlisted</h5>
-
-                    <h3>{{ shortlisted }}</h3>
-
-                </div>
-
-            </div>
-
-            <div class="col-md-3">
-
-                <div
-                    class="card p-4 text-center"
-                    style="cursor:pointer;"
-                    @click="router.push('/post-job')"
+                <input
+                    type="text"
+                    class="form-control"
+                    v-model="job.skills"
+                    required
                 >
 
-                    <h5>Post New Job</h5>
+            </div>
 
-                </div>
+            <div class="mb-3">
+
+                <label class="form-label">Experience (Years)</label>
+
+                <input
+                    type="number"
+                    step="0.1"
+                    class="form-control"
+                    v-model="job.experience"
+                    required
+                >
 
             </div>
 
-        </div>
+            <div class="mb-3">
+
+                <label class="form-label">Salary Package (LPA)</label>
+
+                <input
+                    type="number"
+                    step="0.1"
+                    class="form-control"
+                    v-model="job.salary_package"
+                    required
+                >
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-success me-2"
+            >
+                Post Job
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                @click="router.push('/company/dashboard')"
+            >
+                Cancel
+            </button>
+
+        </form>
 
     </div>
 
@@ -76,28 +113,45 @@
 
 <script setup>
 
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
-import api from "../services/api";
 import Navbar from "../components/Navbar.vue";
+import api from "../services/api";
 
 const router = useRouter();
 
-const totalJobs = ref(0);
-const totalApplications = ref(0);
-const shortlisted = ref(0);
+const job = ref({
 
-async function loadDashboard() {
+    title: "",
+    description: "",
+    eligibility: "",
+    skills: "",
+    experience: "",
+    salary_package: ""
+
+});
+
+async function postJob() {
 
     try {
 
-        const response = await api.get("/company/jobs", {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("access_token")}`
-            }
-        });
+        await api.post(
 
-        totalJobs.value = response.data.length;
+            "/post-job",
+
+            job.value,
+
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`
+                }
+            }
+
+        );
+
+        alert("Job posted successfully!");
+
+        router.push("/company/jobs");
 
     }
 
@@ -105,14 +159,10 @@ async function loadDashboard() {
 
         console.log(error);
 
+        alert("Failed to post job.");
+
     }
 
 }
-
-onMounted(() => {
-
-    loadDashboard();
-
-});
 
 </script>

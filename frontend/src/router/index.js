@@ -20,6 +20,8 @@ import CompanyProfile from "../views/CompanyProfile.vue";
 import EditCompanyProfile from "../views/EditCompanyProfile.vue";
 import StudentProfile from "../views/StudentProfile.vue";
 import EditStudentProfile from "../views/EditStudentProfile.vue";
+import ShortlistedCandidates from "../views/ShortlistedCandidates.vue";
+import StudentPlacements from "../views/StudentPlacements.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,30 +39,36 @@ const router = createRouter({
       path: "/student/dashboard",
       name: "StudentDashboard",
       component: StudentDashboard,
+      meta: { role: "student" }
     },
     {
       path: "/company/dashboard",
       name: "CompanyDashboard",
       component: CompanyDashboard,
+      meta: { role: "company" }
     },
     {
       path: "/admin/dashboard",
       name: "AdminDashboard",
       component: AdminDashboard,
+      meta: { role: "admin" }
     },
     {
       path: "/companies",
       name: "Companies",
       component: Companies,
+      meta: { role: "admin" }
     },
     {
       path: "/company/:id",
       name: "CompanyDetails",
       component: CompanyDetails,
+      meta: { role: "admin" }
     },
     {
       path: "/register/company",
       component: CompanyRegister,
+
     },
     {
       path: "/register/student",
@@ -69,54 +77,77 @@ const router = createRouter({
     {
       path: "/jobs",
       component: Jobs,
+      meta: { role: "admin" }
     },
     {
       path: "/job/:id",
       component: JobDetails,
+      meta: { role: "admin" }
     },
     {
       path: "/student/jobs",
       component: StudentJobs,
+      meta: { role: "student" }
     },
     {
       path: "/student/job/:id",
       component: StudentJobDetails,
+      meta: { role: "student" }
     },
     {
       path: "/post-job",
       component: PostJob,
+      meta: { role: "company" }
     },
     {
       path: "/company/jobs",
       component: CompanyJobs,
+      meta: { role: "company" }
     },
     {
       path: "/company/job/:id",
       component: CompanyJobDetails,
+      meta: { role: "company" }
     },
     {
       path:"/application/:id",
       component:ApplicationDetails,
+      meta: { role: "company" }
     },
     {
       path: "/student/applications",
       component: AppliedJobs,
+      meta: { role: "student" }
     },
     {
       path: "/company/profile",
-      component: CompanyProfile
+      component: CompanyProfile,
+      meta: { role: "company" }
     },
     {
       path: "/company/profile/edit",
       component: EditCompanyProfile,
+      meta: { role: "company" }
     },
     {
       path: "/student/profile",
       component: StudentProfile,
+      meta: { role: "student" }
     },
     {
       path: "/student/profile/edit",
       component: EditStudentProfile,
+      meta: { role: "student" }
+    },
+    {
+      path: "/company/shortlisted",
+      component: ShortlistedCandidates,
+      meta: { role: "company" }
+    },
+    {
+      path: "/student/placements",
+      component: StudentPlacements,
+      meta: { role: "student" }
     },
   ],
 });
@@ -125,29 +156,19 @@ router.beforeEach((to, from, next) => {
     const token = localStorage.getItem("access_token");
     const role = localStorage.getItem("role");
 
-    if (
-        to.path.startsWith("/admin") &&
-        (!token || role !== "admin")
-    ) {
-        return next("/");
+    if (!to.meta.role) {
+        return next();
     }
 
-    if (
-        to.path.startsWith("/company") &&
-        (!token || role !== "company")
-    ) {
-        return next("/");
+    if (!token) {
+        return next("/login");
     }
 
-    if (
-        to.path.startsWith("/student") &&
-        (!token || role !== "student")
-    ) {
+    if (role !== to.meta.role) {
         return next("/");
     }
 
     next();
 
 });
-
 export default router;
