@@ -1,0 +1,15 @@
+
+========================================
+        COMPANY MONTHLY REPORT
+========================================
+
+Company Name         : IKEA
+
+Jobs Posted          : 2
+Applications         : 2
+Interviews Scheduled : 1
+Students Selected    : 0
+
+Generated On : 2026-07-15 22:24:33.770525
+
+========================================

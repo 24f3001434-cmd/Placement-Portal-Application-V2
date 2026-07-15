@@ -3,12 +3,12 @@
         MONTHLY PLACEMENT REPORT
 ========================================
 
-Total Students      : 3
-Total Companies     : 1
-Total Jobs          : 3
-Total Applications  : 5
+Total Students      : 5
+Total Companies     : 3
+Total Jobs          : 5
+Total Applications  : 8
 Total Placements    : 1
 
-Generated On : 2026-07-15 18:01:44.871753
+Generated On : 2026-07-15 22:20:57.615779
 
 ========================================

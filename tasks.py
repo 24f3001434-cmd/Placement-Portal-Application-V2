@@ -84,8 +84,8 @@ Placement Portal
 
 
 
-### command to start celery ###
-#####  celery -A celery_worker worker --pool=solo --without-mingle --without-gossip --without-heartbeat --loglevel=info
+### command to start celery ###celery -A celery_worker worker --pool=solo --without-mingle --without-gossip --without-heartbeat --loglevel=info
+#####  
 
 
 @celery.task
