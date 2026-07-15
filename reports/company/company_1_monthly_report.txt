@@ -1,0 +1,15 @@
+
+========================================
+        COMPANY MONTHLY REPORT
+========================================
+
+Company Name         : Wipro
+
+Jobs Posted          : 3
+Applications         : 5
+Interviews Scheduled : 2
+Students Selected    : 1
+
+Generated On : 2026-07-15 18:05:50.063324
+
+========================================

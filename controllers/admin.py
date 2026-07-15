@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
-
+from tasks import monthly_report
 from models import db, Company, Student, JobPosition, Application,User
-
+from extensions import cache
 admin_bp = Blueprint("admin", __name__)
 
 
@@ -11,6 +11,7 @@ admin_bp = Blueprint("admin", __name__)
 
 
 @admin_bp.route("/dashboard", methods=["GET"])
+@cache.memoize(timeout=60)
 @jwt_required()
 def admin_dashboard():
 
@@ -221,3 +222,17 @@ def approve_job(job_id):
     return jsonify({
         "message": "Job Approved Successfully"
     }), 200
+
+##############################
+# Generate Monthly Report
+##############################
+
+@admin_bp.route("/monthly-report", methods=["POST"])
+@jwt_required()
+def generate_monthly_report():
+
+    monthly_report.delay()
+
+    return jsonify({
+        "message": "Monthly report generation started."
+    }), 202

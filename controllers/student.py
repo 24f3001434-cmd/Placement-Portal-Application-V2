@@ -7,10 +7,14 @@ from flask import send_file
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from models import JobPosition, Student, Application, db , Placement
-
+from tasks import student_csv_export
+from extensions import cache
 student_bp = Blueprint("student", __name__)
 
 @student_bp.route("/student/jobs", methods=["GET"])
+@student_bp.route("/student/jobs", methods=["GET"])
+@cache.cached(timeout=60)
+@jwt_required()
 @jwt_required()
 def get_available_jobs():
 
@@ -304,7 +308,7 @@ def download_offer_letter(placement_id):
 
         Paragraph("<br/>", styles["Normal"]),
 
-        Paragraph("<b>Placement Confirmation Letter</b>", styles["Heading2"]),
+        Paragraph("<b>PLACEMENT OFFER LETTER</b>", styles["Heading2"]),
 
         Paragraph(f"<b>Student:</b> {student.name}", styles["Normal"]),
 
@@ -315,6 +319,10 @@ def download_offer_letter(placement_id):
 
         Paragraph(
             f"<b>Job Title:</b> {placement.job_position.title}",
+            styles["Normal"]
+        ),
+        Paragraph(
+            f"<b>Package:</b> {placement.job_position.salary_package}LPA",
             styles["Normal"]
         ),
 
@@ -347,3 +355,26 @@ def download_offer_letter(placement_id):
         mimetype="application/pdf"
 
     )
+
+##########################################
+# Student CSV Export
+##########################################
+
+@student_bp.route("/student/export-csv", methods=["POST"])
+@jwt_required()
+def export_student_csv():
+
+    user_id = get_jwt_identity()
+
+    student = Student.query.filter_by(user_id=user_id).first()
+
+    if student is None:
+        return jsonify({
+            "message": "Student not found"
+        }), 404
+
+    student_csv_export.delay(student.id)
+
+    return jsonify({
+        "message": "CSV export started successfully."
+    }), 202

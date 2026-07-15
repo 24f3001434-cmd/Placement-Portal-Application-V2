@@ -1,6 +1,31 @@
 <template>
   <Navbar />
   <div class="container mt-5">
+    <div
+      v-if="successMessage"
+      class="alert alert-success alert-dismissible fade show"
+      role="alert"
+    >
+      {{ successMessage }}
+      <button
+        type="button"
+        class="btn-close"
+        @click="successMessage=''"
+      ></button>
+    </div>
+
+    <div
+      v-if="errorMessage"
+      class="alert alert-danger alert-dismissible fade show"
+      role="alert"
+    >
+      {{ errorMessage }}
+      <button
+        type="button"
+        class="btn-close"
+        @click="errorMessage=''"
+      ></button>
+    </div>
 
     <h2>Admin Dashboard</h2>
 
@@ -49,6 +74,47 @@
       </div>
 
     </div>
+    <div class="row mt-4">
+
+      <div class="col-md-6">
+
+        <div class="card shadow-sm">
+
+          <div class="card-body">
+
+            <h4 class="card-title">
+              📊 Monthly Placement Report
+            </h4>
+
+            <p class="text-muted">
+              Generate the latest placement report asynchronously using Celery.
+            </p>
+
+            <div class="d-flex gap-2">
+
+              <button
+                class="btn btn-primary"
+                @click="generateReport"
+              >
+                Generate Report
+              </button>
+
+              <button
+                class="btn btn-success"
+                @click="downloadReport"
+              >
+                Download Report
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
 
   </div>
 </template>
@@ -64,6 +130,8 @@ const dashboard = ref({
   jobs: 0,
   applications: 0,
 });
+const successMessage = ref("");
+const errorMessage = ref("");
 
 async function loadDashboard() {
   try {
@@ -73,6 +141,39 @@ async function loadDashboard() {
   } catch (error) {
     console.log(error);
   }
+}
+async function generateReport() {
+
+  try {
+
+    const response = await api.post("/monthly-report");
+
+    successMessage.value = response.data.message;
+
+    setTimeout(() => {
+        successMessage.value = "";
+    }, 3000);
+
+  } catch (error) {
+
+    errorMessage.value = "Unable to generate monthly report.";
+
+    setTimeout(() => {
+        errorMessage.value = "";
+    }, 3000);
+
+    console.log(error);
+
+  }
+
+}
+function downloadReport() {
+
+  window.open(
+    "http://127.0.0.1:5000/download-report/admin/monthly_report.txt",
+    "_blank"
+  );
+
 }
 
 onMounted(() => {

@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
-from models import db, Company, Student, JobPosition, Application, User,Placement
-
+from models import db, Company, Student, JobPosition, Application,User,Placement
+from tasks import company_monthly_report
+from tasks import company_csv_export
+from extensions import cache
 company_bp = Blueprint("company", __name__)
 
 ### Post Job####
@@ -263,6 +265,7 @@ def close_job(job_id):
     }), 200
 
 @company_bp.route("/company/dashboard", methods=["GET"])
+@cache.memoize(timeout=60)
 @jwt_required()
 def company_dashboard():
 
@@ -452,3 +455,45 @@ def schedule_interview(application_id):
         "message": "Interview scheduled successfully"
     }), 200
 
+@company_bp.route("/company/monthly-report", methods=["POST"])
+@jwt_required()
+def generate_company_monthly_report():
+
+    user_id = get_jwt_identity()
+
+    company = Company.query.filter_by(user_id=user_id).first()
+
+    if company is None:
+        return jsonify({
+            "message": "Company not found"
+        }), 404
+
+    company_monthly_report.delay(company.id)
+
+    return jsonify({
+        "message": "Company monthly report generation started."
+    }), 202
+
+
+##########################################
+# Company CSV Export
+##########################################
+
+@company_bp.route("/company/export-csv", methods=["POST"])
+@jwt_required()
+def export_company_csv():
+
+    user_id = get_jwt_identity()
+
+    company = Company.query.filter_by(user_id=user_id).first()
+
+    if company is None:
+        return jsonify({
+            "message": "Company not found"
+        }), 404
+
+    company_csv_export.delay(company.id)
+
+    return jsonify({
+        "message": "Company CSV export started successfully."
+    }), 202
