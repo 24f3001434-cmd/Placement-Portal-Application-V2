@@ -52,16 +52,7 @@
                     <td>{{ student.course }}</td>
                     <td>{{ student.cgpa }}</td>
 
-                    <td>
-
-                        <button
-                            class="btn btn-primary btn-sm"
-                            @click="router.push(`/company/interview/${student.application_id}`)"
-                        >
-                            Schedule Interview
-                        </button>
-
-                    </td>
+                    
 
                 </tr>
 

@@ -1,44 +1,127 @@
 <template>
-    <Navbar />
-  <div>
-    <h2>Placement Portal Login</h2>
 
-    <input type="email" v-model="email" placeholder="Enter Email" />
+<Navbar />
 
-    <br /><br />
+<div class="container d-flex justify-content-center align-items-center"
+style="min-height:85vh;">
 
-    <input type="password" v-model="password" placeholder="Enter Password" />
+<div class="card shadow p-4" style="width:420px;">
 
-    <br /><br />
+<h2 class="text-center mb-4">
+Placement Portal Login
+</h2>
 
-    <select v-model="role">
-      <option value="student">Student</option>
-      <option value="company">Company</option>
-      <option value="admin">Admin</option>
-    </select>
+<input
+class="form-control mb-3"
+type="email"
+v-model="email"
+placeholder="Email"
+/>
 
-    <br /><br />
+<input
+class="form-control mb-3"
+type="password"
+v-model="password"
+placeholder="Password"
+/>
 
-    <button @click="login">Login</button>
-    <div class="mt-3">
+<div class="mb-3">
+
+    <label class="form-label fw-bold">
+
+        Login As
+
+    </label>
+
+    <div
+        class="btn-group w-100"
+        role="group"
+    >
 
         <button
-            class="btn btn-outline-primary me-2"
-            @click="$router.push('/register/company')"
+            class="btn"
+            :class="role==='student'
+                ? 'btn-primary'
+                : 'btn-outline-primary'"
+            @click="role='student'"
         >
-            Register as Company
+
+            Student
+
         </button>
+
         <button
-            class="btn btn-outline-success"
-            @click="$router.push('/register/student')"
+            class="btn"
+            :class="role==='company'
+                ? 'btn-success'
+                : 'btn-outline-success'"
+            @click="role='company'"
         >
-            Register as Student
+
+            Company
+
+        </button>
+
+        <button
+            class="btn"
+            :class="role==='admin'
+                ? 'btn-dark'
+                : 'btn-outline-dark'"
+            @click="role='admin'"
+        >
+
+            Admin
+
         </button>
 
     </div>
 
-    <p>{{ message }}</p>
-  </div>
+</div>
+
+<button
+class="btn btn-primary w-100 mb-3"
+@click="login"
+>
+
+Login
+
+</button>
+
+<div class="d-grid gap-2">
+
+<button
+class="btn btn-outline-primary"
+@click="$router.push('/register/company')"
+>
+
+Register as Company
+
+</button>
+
+<button
+class="btn btn-outline-success"
+@click="$router.push('/register/student')"
+>
+
+Register as Student
+
+</button>
+
+</div>
+
+<p
+v-if="message"
+class="text-center mt-3 text-danger"
+>
+
+{{ message }}
+
+</p>
+
+</div>
+
+</div>
+
 </template>
 
 <script setup>

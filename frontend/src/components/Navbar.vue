@@ -13,7 +13,8 @@
                 Placement Portal
             </a>
 
-            <div class="ms-auto">
+            <div class="ms-auto" v-if="role">
+                
 
                 <button
                     v-if="role !== 'admin'"
@@ -35,6 +36,16 @@
                     @click="logout"
                 >
                     Logout
+                </button>
+
+            </div>
+            <div class="ms-auto" v-else>
+
+                <button
+                    class="btn btn-outline-light"
+                    @click="router.push('/')"
+                >
+                    Home
                 </button>
 
             </div>
@@ -96,7 +107,7 @@ function logout() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("role");
 
-    router.push("/login");
+    router.replace("/login");
 
 }
 

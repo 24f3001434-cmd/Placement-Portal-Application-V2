@@ -22,13 +22,18 @@ import StudentProfile from "../views/StudentProfile.vue";
 import EditStudentProfile from "../views/EditStudentProfile.vue";
 import ShortlistedCandidates from "../views/ShortlistedCandidates.vue";
 import StudentPlacements from "../views/StudentPlacements.vue";
+import Students from "../views/Students.vue";
+import StudentDetails from "../views/StudentDetails.vue";
+import Home from "../views/Home.vue";
+
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
-      redirect: "/login",
+      component: Home,
     },
     {
       path: "/login",
@@ -57,6 +62,11 @@ const router = createRouter({
       path: "/companies",
       name: "Companies",
       component: Companies,
+      meta: { role: "admin" }
+    },
+    {
+      path: "/students",
+      component: Students,
       meta: { role: "admin" }
     },
     {
@@ -149,26 +159,31 @@ const router = createRouter({
       component: StudentPlacements,
       meta: { role: "student" }
     },
+    {
+      path: "/student/:id",
+      component: StudentDetails,
+      meta: { role: "admin" }
+    },
   ],
 });
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
 
     const token = localStorage.getItem("access_token");
     const role = localStorage.getItem("role");
 
     if (!to.meta.role) {
-        return next();
+        return true;
     }
 
     if (!token) {
-        return next("/login");
+        return "/login";
     }
 
     if (role !== to.meta.role) {
-        return next("/");
+        return "/";
     }
 
-    next();
+    return true;
 
 });
 export default router;

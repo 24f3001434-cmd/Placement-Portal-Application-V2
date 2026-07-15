@@ -22,7 +22,7 @@ def post_job():
             "message": "Company not found"
         }), 404
     
-    if company.status != "approved":
+    if company.approval != "approved":
 
         return jsonify({
             "message": "Company is not approved by Admin"
@@ -291,10 +291,12 @@ def company_dashboard():
 
         total_applications += len(applications)
 
-        shortlisted += sum(
-            1 for application in applications
-            if application.status in ["shortlisted", "selected"]
-        )
+        if job.status == "active":
+
+            shortlisted += sum(
+                1 for application in applications
+                if application.status == "shortlisted"
+            )
 
     return jsonify({
 

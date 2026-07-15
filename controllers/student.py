@@ -11,7 +11,7 @@ from tasks import student_csv_export
 from extensions import cache
 student_bp = Blueprint("student", __name__)
 
-@student_bp.route("/student/jobs", methods=["GET"])
+
 @student_bp.route("/student/jobs", methods=["GET"])
 @cache.cached(timeout=60)
 @jwt_required()

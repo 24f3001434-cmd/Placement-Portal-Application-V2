@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from tasks import monthly_report
-from models import db, Company, Student, JobPosition, Application,User
+from models import db, Company, Student, JobPosition, Application,User,Placement
 from extensions import cache
 admin_bp = Blueprint("admin", __name__)
 
@@ -236,3 +236,122 @@ def generate_monthly_report():
     return jsonify({
         "message": "Monthly report generation started."
     }), 202
+
+@admin_bp.route("/students", methods=["GET"])
+@jwt_required()
+def get_students():
+
+    students = Student.query.all()
+
+    data = []
+
+    for student in students:
+
+        applications = Application.query.filter_by(
+            student_id=student.id
+        ).count()
+
+        placements = Placement.query.filter_by(
+            student_id=student.id
+        ).count()
+
+        data.append({
+
+            "id": student.id,
+            "name": student.name,
+            "roll_number": student.roll_number,
+            "course": student.course,
+            "cgpa": student.cgpa,
+            "applications": applications,
+            "placements": placements
+
+        })
+
+    return jsonify(data), 200
+
+@admin_bp.route("/applications", methods=["GET"])
+@jwt_required()
+def get_all_applications():
+
+    applications = Application.query.all()
+
+    data = []
+
+    for application in applications:
+
+        data.append({
+
+            "application_id": application.id,
+
+            "student_name": application.student.name,
+
+            "company_name":
+                application.job_position.company.company_name,
+
+            "job_title":
+                application.job_position.title,
+
+            "status":
+                application.status,
+
+            "applied_on":
+                application.applied_on.strftime("%d-%m-%Y")
+
+        })
+
+    return jsonify(data), 200
+
+@admin_bp.route("/student/<int:student_id>", methods=["GET"])
+@jwt_required()
+def get_student(student_id):
+
+    student = Student.query.get(student_id)
+
+    if student is None:
+        return jsonify({
+            "message": "Student not found"
+        }), 404
+
+    applications = []
+
+    for application in student.applications:
+
+        applications.append({
+
+            "job_title": application.job_position.title,
+            "company": application.job_position.company.company_name,
+            "status": application.status
+
+        })
+
+    placements = []
+
+    student_placements = Placement.query.filter_by(
+        student_id=student.id
+    ).all()
+
+    for placement in student_placements:
+
+        placements.append({
+
+            "company": placement.company.company_name,
+            "job_title": placement.job_position.title,
+            "placement_date":
+                placement.placement_date.strftime("%d-%m-%Y")
+
+        })
+
+    return jsonify({
+
+        "id": student.id,
+        "name": student.name,
+        "roll_number": student.roll_number,
+        "course": student.course,
+        "cgpa": student.cgpa,
+        "skills": student.skills,
+        "experience": student.experience,
+        "resume": student.resume,
+        "applications": applications,
+        "placements": placements
+
+    }), 200
